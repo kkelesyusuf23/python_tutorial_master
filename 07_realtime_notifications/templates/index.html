@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gerçek Zamanlı Bildirimler</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .notification-box { 
+            border: 2px solid #3498db; 
+            padding: 15px; 
+            border-radius: 8px; 
+            background: white; 
+            min-height: 200px;
+        }
+        .notification { 
+            padding: 15px; 
+            margin-bottom: 10px; 
+            background-color: #e1f5fe; 
+            border-left: 5px solid #0288d1; 
+            border-radius: 4px;
+            animation: slideIn 0.5s;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Müşteri Paneli (Müşteri ID: <span id="clientId"></span>)</h1>
+    <p>Bağlantı Durumu: <strong id="status" style="color: #f39c12;">Bağlanıyor...</strong></p>
+    
+    <div class="notification-box" id="messages">
+        <p style="color: gray; font-style: italic;">Şu an bir bildirim yok, bekleniyor...</p>
+    </div>
+
+    <script>
+        // Her sekmeye rastgele bir Müşteri ID'si veriyoruz
+        var clientId = Math.floor(Math.random() * 1000);
+        document.getElementById("clientId").innerText = clientId;
+
+        // Backend ile WEBSOCKET bağlantısını başlatıyoruz
+        // Dikkat: http:// yerine ws:// protokolü kullanılıyor!
+        var ws = new WebSocket(`ws://127.0.0.1:8000/ws/${clientId}`);
+        
+        ws.onopen = function(event) {
+            document.getElementById("status").innerText = "Bağlandı (Canlı Yayında)";
+            document.getElementById("status").style.color = "green";
+        };
+
+        // ==========================================
+        // GERÇEK ZAMANLI İLETİŞİM (PUSH MANTIĞI)
+        // ==========================================
+        // Biz sunucuya istek atmıyoruz! Sunucudan bize bir mesaj "itildiği" (Push) an 
+        // buradaki fonksiyon otomatik olarak tetikleniyor.
+        ws.onmessage = function(event) {
+            var messagesDiv = document.getElementById("messages");
+            
+            // Eğer "Bekleniyor" yazısı varsa onu sil
+            if (messagesDiv.innerHTML.includes("bekleniyor...")) {
+                messagesDiv.innerHTML = "";
+            }
+
+            var newMessage = document.createElement("div");
+            newMessage.className = "notification";
+            newMessage.innerText = "YENİ DUYURU: " + event.data;
+            
+            // Yeni mesajı en üste ekle (Animasyonla)
+            messagesDiv.insertBefore(newMessage, messagesDiv.firstChild);
+        };
+
+        ws.onclose = function(event) {
+            document.getElementById("status").innerText = "Bağlantı Koptu";
+            document.getElementById("status").style.color = "red";
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Python Sanal Ortamları
+venv/
+env/
+.env
+
+# Python Önbellek Dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Veritabanları
+*.sqlite3
+*.db
+orders.db
+analytics.db
+booking.db
+
+# İşletim Sistemi ve Editör Dosyaları
+.DS_Store
+.idea/
+.vscode/
